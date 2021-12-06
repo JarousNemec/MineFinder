@@ -25,7 +25,7 @@ namespace ConsoleApp1
             bool runProgram = true;
             while (runProgram)
             {
-                RenderGameMenu(data.cursorPos, data.fieldSizeMenuOptions);
+                RenderGameMenu(data.cursorPos, data.mainMenuOptions);
                 KeyControl(data, data.mainMenuOptions);
             }
         }

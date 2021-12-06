@@ -5,7 +5,7 @@ namespace ConsoleApp1
 {
     public class GameData
     {
-        private static int mapSizeX = 10;
+        private static int mapSizeX = 30;
         private static int mapSizeY = mapSizeX;
         public Field[,] map = new Field[mapSizeX, mapSizeY];
         public int cursorX;
@@ -70,6 +70,7 @@ namespace ConsoleApp1
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("You WON!!!!!!!!!!");
             Console.WriteLine("Your play time is: " + (CalculatePlayTime(data)));
+            Console.ResetColor();
         }
 
         private TimeSpan CalculatePlayTime(GameData data)
@@ -77,7 +78,7 @@ namespace ConsoleApp1
             return (new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second) - data.beginTime);
         }
 
-        private static bool KeyController(GameData data)
+        private static bool  KeyController(GameData data)
         {
             ConsoleKeyInfo key = Console.ReadKey();
             switch (key.Key)
@@ -117,9 +118,13 @@ namespace ConsoleApp1
                 return false;
             }
 
-            data.map[data.cursorX, data.cursorY].isCovered = false;
+            if (data.map[data.cursorX, data.cursorY].isCovered)
+            {
+                data.map[data.cursorX, data.cursorY].isCovered = false;
 
-            data.uncoveredFields++;
+                data.uncoveredFields++;
+            }
+            
             return true;
         }
 
@@ -127,6 +132,7 @@ namespace ConsoleApp1
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Game Over");
+            Console.ResetColor();
         }
 
         private static void MarkField(GameData data)
