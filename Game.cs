@@ -41,7 +41,7 @@ namespace ConsoleApp1
             Play(data);
             Console.ReadKey();
         }
-
+       
         private void Play(GameData data)
         {
             GenerateMap(data);
@@ -50,7 +50,7 @@ namespace ConsoleApp1
             {
                 RenderMap(data);
                 isGameRunning = KeyController(data);
-                if (data.mineCount == 0)
+                if (data.mineCount == 0 && (data.map.Length - data.originalCountOfMines) == data.uncoveredFields)
                 {
                     isGameRunning = false;
                     Win(data);
@@ -62,6 +62,11 @@ namespace ConsoleApp1
         {
             dataOp.LogUserPerformenceToDb(
                 CalculatePlayTime(data), data.map.Length, data.originalCountOfMines);
+            WinningScreen(data);
+        }
+
+        private void WinningScreen(GameData data)
+        {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("You WON!!!!!!!!!!");
             Console.WriteLine("Your play time is: " + (CalculatePlayTime(data)));
@@ -77,22 +82,26 @@ namespace ConsoleApp1
             ConsoleKeyInfo key = Console.ReadKey();
             switch (key.Key)
             {
-                case (ConsoleKey) 13:
+                case ConsoleKey.Enter:
                     if (!UncoverField(data)) return false;
                     break;
-                case (ConsoleKey) 32:
+                case ConsoleKey.Spacebar:
                     MarkField(data);
                     break;
-                case (ConsoleKey) 37:
+                case ConsoleKey.LeftArrow:
+                case ConsoleKey.A:
                     MoveCursorLeft(data);
                     break;
-                case (ConsoleKey) 38:
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.W:
                     MoveCursorUp(data);
                     break;
-                case (ConsoleKey) 39:
+                case ConsoleKey.RightArrow:
+                case ConsoleKey.D:
                     MoveCursorRight(data);
                     break;
-                case (ConsoleKey) 40:
+                case ConsoleKey.DownArrow:
+                case ConsoleKey.S:
                     MoveCursorDown(data);
                     break;
             }

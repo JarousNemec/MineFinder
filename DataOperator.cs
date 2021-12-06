@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using System.Diagnostics;
 using MySql.Data.MySqlClient;
 
 namespace ConsoleApp1
@@ -10,15 +11,27 @@ namespace ConsoleApp1
 
         public DataOperator()
         {
+            
+            conn = Connect(ReadSetting("dbConnString"));
+            if (conn != null)
+            {
+                MySqlCommand cmd = InitializeSqlCommand(conn,"select * from sql11455972.users_performances;");
+                var x = cmd.ExecuteReader();
+                conn.Close();
+            }
+            
         }
 
         public void LogUserPerformenceToDb(TimeSpan playTime, int fieldSize, int mineCount)
         {
             conn = Connect(ReadSetting("dbConnString"));
-            MySqlCommand cmd = InitializeSqlCommand(conn,
-                AssemblyUserPerformenceCommandString(playTime, fieldSize, mineCount));
-            cmd.ExecuteNonQuery();
-            conn.Close();
+            if (conn != null)
+            {
+                MySqlCommand cmd = InitializeSqlCommand(conn,
+                    AssemblyUserPerformenceCommandString(playTime, fieldSize, mineCount));
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
         }
 
         private MySqlCommand InitializeSqlCommand(MySqlConnection conn, string command)
@@ -35,23 +48,21 @@ namespace ConsoleApp1
 
         private MySqlConnection Connect(string connString)
         {
-            MySqlConnection conn;
             try
             {
-                conn = new MySqlConnection();
-                conn.ConnectionString = connString;
-                conn.Open();
-                return conn;
+                MySqlConnection connection = new MySqlConnection();
+                connection.ConnectionString = connString;
+                connection.Open();
+                return connection;
             }
-            catch (MySql.Data.MySqlClient.MySqlException ex)
+            catch (MySqlException ex)
             {
                 Console.WriteLine(ex.Message);
             }
-
             return null;
         }
 
-        private string ReadSetting(string key)
+        public static string ReadSetting(string key)
         {
             try
             {
@@ -63,8 +74,20 @@ namespace ConsoleApp1
             {
                 Console.WriteLine("Error reading app settings");
             }
-
             return null;
+        }
+
+        public static void SetSetting(string key, string value)
+        {
+            try
+            {
+                var appSettings = ConfigurationManager.AppSettings;
+                appSettings[key] = value;
+            }
+            catch (ConfigurationErrorsException)
+            {
+                Console.WriteLine("Error writing app settings");
+            }
         }
     }
 }

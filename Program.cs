@@ -13,7 +13,9 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            new Game();
+            //new Game();
+            //new DataOperator();
+            new GameMenu();
         }
     }
 }
