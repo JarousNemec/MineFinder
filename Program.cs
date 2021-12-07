@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace ConsoleApp1
 {
@@ -13,8 +14,6 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            //new Game();
-            //new DataOperator();
             new GameMenu();
         }
     }

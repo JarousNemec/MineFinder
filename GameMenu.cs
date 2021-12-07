@@ -113,11 +113,11 @@ namespace ConsoleApp1
         {
             Console.Clear();
             Console.WriteLine("Zadejte nové uživatelské jméno: ");
-            dataOperator.SetSetting("userName",Console.ReadLine());
+            dataOperator.SetSetting(new string[]{Console.ReadLine(),""});
         }
         private void SetMapSize(DataOperator dataOperator,int value)
         {
-            dataOperator.SetSetting("mapSize",Convert.ToString(value));
+            dataOperator.SetSetting(new string[]{"",Convert.ToString(value)});
         }
         private void RenderGameMenu(int cursorPos, string[] menuOptions)
         {

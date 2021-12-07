@@ -31,7 +31,7 @@ namespace ConsoleApp1
 
         private GameData LoadData(DataOperator dataOperator)
         {
-            if (int.TryParse(dataOperator.ReadSetting("mapSize"), out int size))
+            if (int.TryParse(dataOperator.ReadAppSetting("mapSize"), out int size))
             {
                 return new GameData(size);
             }
