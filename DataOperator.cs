@@ -62,7 +62,7 @@ namespace ConsoleApp1
             return null;
         }
 
-        public static string ReadSetting(string key)
+        public string ReadSetting(string key)
         {
             try
             {
@@ -77,12 +77,11 @@ namespace ConsoleApp1
             return null;
         }
 
-        public static void SetSetting(string key, string value)
+        public void SetSetting(string key, string value)
         {
             try
             {
-                var appSettings = ConfigurationManager.AppSettings;
-                appSettings[key] = value;
+                //Properties.Settings.Default.FirstUserSetting = "abc";
             }
             catch (ConfigurationErrorsException)
             {

@@ -3,46 +3,17 @@ using System.Text;
 
 namespace ConsoleApp1
 {
-    public class GameData
-    {
-        private static int mapSizeX = 30;
-        private static int mapSizeY = mapSizeX;
-        public Field[,] map = new Field[mapSizeX, mapSizeY];
-        public int cursorX;
-        public int cursorY;
-        public int mineChecked;
-        public int mineCount;
-        public int uncoveredFields;
-        public int originalCountOfMines;
-        public TimeSpan beginTime;
-
-        public GameData()
-        {
-            beginTime = new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
-        }
-    }
-
-    public class Field
-    {
-        public bool isMine;
-        public bool isChecked;
-        public int around;
-        public bool isCovered = true;
-    }
-
     public class Game
     {
-        private DataOperator dataOp;
-
         public Game()
         {
-            dataOp = new DataOperator();
-            GameData data = new GameData();
-            Play(data);
+            DataOperator dataOp = new DataOperator();
+            GameData data = LoadData(dataOp);
+            Play(data, dataOp);
             Console.ReadKey();
         }
-       
-        private void Play(GameData data)
+
+        private void Play(GameData data, DataOperator dataOp)
         {
             GenerateMap(data);
             bool isGameRunning = true;
@@ -53,12 +24,22 @@ namespace ConsoleApp1
                 if (data.mineCount == 0 && (data.map.Length - data.originalCountOfMines) == data.uncoveredFields)
                 {
                     isGameRunning = false;
-                    Win(data);
+                    Win(data, dataOp);
                 }
             }
         }
 
-        private void Win(GameData data)
+        private GameData LoadData(DataOperator dataOperator)
+        {
+            if (int.TryParse(dataOperator.ReadSetting("mapSize"), out int size))
+            {
+                return new GameData(size);
+            }
+
+            return new GameData(10);
+        }
+
+        private void Win(GameData data, DataOperator dataOp)
         {
             dataOp.LogUserPerformenceToDb(
                 CalculatePlayTime(data), data.map.Length, data.originalCountOfMines);
@@ -68,8 +49,8 @@ namespace ConsoleApp1
         private void WinningScreen(GameData data)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("You WON!!!!!!!!!!");
-            Console.WriteLine("Your play time is: " + (CalculatePlayTime(data)));
+            Console.WriteLine("Vyhráli jste");
+            Console.WriteLine("Herní čas je: " + (CalculatePlayTime(data)));
             Console.ResetColor();
         }
 
@@ -78,7 +59,7 @@ namespace ConsoleApp1
             return (new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second) - data.beginTime);
         }
 
-        private static bool  KeyController(GameData data)
+        private static bool KeyController(GameData data)
         {
             ConsoleKeyInfo key = Console.ReadKey();
             switch (key.Key)
@@ -124,14 +105,14 @@ namespace ConsoleApp1
 
                 data.uncoveredFields++;
             }
-            
+
             return true;
         }
 
         private static void DefeatScreen()
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Game Over");
+            Console.WriteLine("Vybouchli jste :)");
             Console.ResetColor();
         }
 
