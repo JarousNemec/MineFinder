@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 
 namespace ConsoleApp1
 {
@@ -22,6 +21,7 @@ namespace ConsoleApp1
     {
         public GameMenu()
         {
+            Console.Clear();
             GameMenuData data = new GameMenuData();
             DataOperator dataOperator = new DataOperator();
             Menu(data,dataOperator);
@@ -67,7 +67,6 @@ namespace ConsoleApp1
                         switch (data.cursorPos)
                         {
                             case 0:
-                                menurun = false;
                                 Console.Clear();
                                 Console.WriteLine("Načítání...");
                                 var game = new Game();
@@ -101,9 +100,11 @@ namespace ConsoleApp1
                     else if (data.currentShowingMenuId == 3)
                     {
                         SetMapSize(dataOperator,(data.cursorPos+1)*5);
-                        data.currentShowingMenuId = 0;
-                        data.currentShowingMenuText = data.mainMenuOptions;
+                        data.currentShowingMenuId = 1;
+                        data.currentShowingMenuText = data.settingsMenuOptions;
                     }
+
+                    data.cursorPos = 0;
                 }
                     break;
             }
@@ -113,11 +114,11 @@ namespace ConsoleApp1
         {
             Console.Clear();
             Console.WriteLine("Zadejte nové uživatelské jméno: ");
-            dataOperator.SetSetting(new string[]{Console.ReadLine(),""});
+            dataOperator.WriteSetting(new string[]{Console.ReadLine(),""});
         }
         private void SetMapSize(DataOperator dataOperator,int value)
         {
-            dataOperator.SetSetting(new string[]{"",Convert.ToString(value)});
+            dataOperator.WriteSetting(new string[]{"",Convert.ToString(value)});
         }
         private void RenderGameMenu(int cursorPos, string[] menuOptions)
         {

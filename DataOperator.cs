@@ -1,13 +1,10 @@
 using System;
 using System.Configuration;
-using System.Diagnostics;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Management;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Xml;
-using System.Xml.Serialization;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using Google.Protobuf.Reflection;
 using MySql.Data.MySqlClient;
 
 namespace ConsoleApp1
@@ -15,57 +12,36 @@ namespace ConsoleApp1
     public class DataOperator
     {
         private MySqlConnection conn;
-
-        public DataOperator()
+        
+        private TimeSpan playTime;
+        private int fieldSize;
+        private int mineCount;
+        public void SaveResultData(TimeSpan playTime, int fieldSize, int mineCount)
         {
-            conn = Connect(ReadAppSetting("dbConnString"));
-            if (conn != null)
-            {
-                MySqlCommand cmd = InitializeSqlCommand(conn, "select * from sql11455972.users_performances;");
-                var x = cmd.ExecuteReader();
-                conn.Close();
-            }
+            this.playTime = playTime;
+            this.fieldSize = fieldSize;
+            this.mineCount = mineCount;
+            Thread saving = new Thread(SavingDataToWebStorage);
+            saving.Start();
+            
         }
 
-        public void LogUserPerformenceToDb(TimeSpan playTime, int fieldSize, int mineCount)
+        private void SavingDataToWebStorage()
         {
-            conn = Connect(ReadAppSetting("dbConnString"));
-            if (conn != null)
-            {
-                MySqlCommand cmd = InitializeSqlCommand(conn,
-                    AssemblyUserPerformenceCommandString(playTime, fieldSize, mineCount));
-                cmd.ExecuteNonQuery();
-                conn.Close();
-            }
-        }
+            WebClient webClient = new WebClient();
 
-        private MySqlCommand InitializeSqlCommand(MySqlConnection conn, string command)
-        {
-            return new MySqlCommand(command, conn);
-        }
-
-        private string AssemblyUserPerformenceCommandString(TimeSpan playTime, int fieldSize,
-            int mineCount)
-        {
-            return
-                $"INSERT INTO {ReadAppSetting("dbName")}.users_performances (userName, playTime, fieldSize, mineCount) VALUES ('{ReadAppSetting("userName")}', '{playTime}', {fieldSize}, {mineCount});";
-        }
-
-        private MySqlConnection Connect(string connString)
-        {
+            webClient.QueryString.Add("player", LoadSaveData()[0]);
+            webClient.QueryString.Add("playtime", Convert.ToString(playTime));
+            webClient.QueryString.Add("fieldSize", Convert.ToString(fieldSize));
+            webClient.QueryString.Add("mineCount", Convert.ToString(mineCount));
             try
             {
-                MySqlConnection connection = new MySqlConnection();
-                connection.ConnectionString = connString;
-                connection.Open();
-                return connection;
+                webClient.DownloadString(ReadAppSetting("webside"));
             }
-            catch (MySqlException ex)
+            catch (Exception e)
             {
-                Console.WriteLine(ex.Message);
+                // ignored
             }
-
-            return null;
         }
 
         public string ReadAppSetting(string key)
@@ -84,7 +60,19 @@ namespace ConsoleApp1
             return null;
         }
 
-        public void SetSetting(string[] dataToSave)
+        public string[] LoadSaveData()
+        {
+            if (File.Exists(ReadAppSetting("savePath")))
+            {
+                string[] splitedDataFromFile;
+                LoadExistingFile(out _, out splitedDataFromFile);
+                return splitedDataFromFile;
+            }
+
+            return new[] {"unknown", "0"};
+        }
+
+        public void WriteSetting(string[] dataToSave)
         {
             try
             {
@@ -92,6 +80,7 @@ namespace ConsoleApp1
                 {
                     InitializeSaveFile();
                 }
+
                 string[] splitedDataFromFile;
                 string dataFromFileInLine;
                 LoadExistingFile(out dataFromFileInLine, out splitedDataFromFile);
@@ -109,13 +98,16 @@ namespace ConsoleApp1
             {
                 string outputData = "";
                 outputData = MargeSaveWithExistingData(dataToSave, splitedDataFromFile, outputData);
-                StreamWriter streamWriter = new StreamWriter(stream);
-                streamWriter.Write(outputData + new string(' ', dataFromFileInLine.Length));
-                streamWriter.Close();
+                using (StreamWriter streamWriter = new StreamWriter(stream))
+                {
+                    streamWriter.Write(outputData + new string(' ', dataFromFileInLine.Length));
+                    streamWriter.Close();
+                }
             }
         }
 
-        private static string MargeSaveWithExistingData(string[] dataToSave, string[] splitedDataFromFile, string outputData)
+        private static string MargeSaveWithExistingData(string[] dataToSave, string[] splitedDataFromFile,
+            string outputData)
         {
             for (int i = 0; i < dataToSave.Length; i++)
             {
@@ -127,8 +119,10 @@ namespace ConsoleApp1
                 {
                     outputData += dataToSave[i];
                 }
+
                 outputData += ";";
             }
+
             return outputData;
         }
 
@@ -136,16 +130,19 @@ namespace ConsoleApp1
         {
             using (Stream stream = File.Open(ReadAppSetting("savePath"), FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
-                StreamReader streamReader = new StreamReader(stream);
-                dataFromFileInLine = streamReader.ReadToEnd();
-                splitedDataFromFile = dataFromFileInLine.Split(';');
-                streamReader.Close();
+                using (StreamReader streamReader = new StreamReader(stream))
+                {
+                    dataFromFileInLine = streamReader.ReadToEnd();
+                    splitedDataFromFile = dataFromFileInLine.Split(';');
+                    streamReader.Close();
+                }
             }
         }
 
         private void InitializeSaveFile()
         {
-            using (StreamWriter streamWriter = new StreamWriter(File.Open(ReadAppSetting("savePath"), FileMode.OpenOrCreate)))
+            using (StreamWriter streamWriter =
+                new StreamWriter(File.Open(ReadAppSetting("savePath"), FileMode.OpenOrCreate)))
             {
                 streamWriter.Write("testovaciPepa;5");
                 streamWriter.Close();

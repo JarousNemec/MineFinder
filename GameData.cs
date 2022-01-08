@@ -5,8 +5,8 @@ namespace ConsoleApp1
     public class GameData
     {
         public Field[,] map;
-        public int cursorX;
         public int cursorY;
+        public int cursorX;
         public int mineChecked;
         public int mineCount;
         public int uncoveredFields;
