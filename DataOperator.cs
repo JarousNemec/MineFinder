@@ -11,7 +11,6 @@ namespace ConsoleApp1
 {
     public class DataOperator
     {
-        private MySqlConnection conn;
         
         private TimeSpan playTime;
         private int fieldSize;
@@ -62,6 +61,7 @@ namespace ConsoleApp1
 
         public string[] LoadSaveData()
         {
+            load:
             if (File.Exists(ReadAppSetting("savePath")))
             {
                 string[] splitedDataFromFile;
@@ -69,7 +69,8 @@ namespace ConsoleApp1
                 return splitedDataFromFile;
             }
 
-            return new[] {"unknown", "0"};
+            InitializeSaveFile();
+            goto load;
         }
 
         public void WriteSetting(string[] dataToSave)
