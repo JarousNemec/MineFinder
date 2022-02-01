@@ -28,7 +28,8 @@ namespace ConsoleApp1
         private void SavingDataToWebStorage()
         {
             WebClient webClient = new WebClient();
-
+            webClient.Headers.Add("User-Name", ReadAppSetting("User-Name"));
+            webClient.Headers.Add("User-Pass", ReadAppSetting("User-Pass"));
             webClient.QueryString.Add("player", LoadSaveData()[0]);
             webClient.QueryString.Add("playtime", Convert.ToString(playTime));
             webClient.QueryString.Add("fieldSize", Convert.ToString(fieldSize));
